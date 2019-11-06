@@ -18,10 +18,10 @@ g_NUM_X_CELLS = int(g_MAP_SIZE_X // g_MAP_RESOLUTION_X) # Number of columns in t
 g_NUM_Y_CELLS = int(g_MAP_SIZE_Y // g_MAP_RESOLUTION_Y) # Number of rows in the grid map
 
 # Map from Lab 4: values of 0 indicate free space, 1 indicates occupied space
-g_WORLD_MAP = [0] * g_NUM_Y_CELLS*g_NUM_X_CELLS # Initialize graph (grid) as array
+g_WORLD_MAP = [0] * g_NUM_Y_CELLS * g_NUM_X_CELLS # Initialize graph (grid) as array
 
 # Source and Destination (I,J) grid coordinates
-g_dest_coordinates = (5,5)
+g_dest_coordinates = (3,3)
 g_src_coordinates = (0,0)
 
 
@@ -32,9 +32,8 @@ def create_test_map(map_array):
   # Add obstacles to up to sqrt(n) vertices of the map
   for i in range(int(math.sqrt(len(map_array)))):
     random_cell = random.randint(0, num_cells)
-    map_matrix[random_cell] = 1
-
-  return map_matrix
+    map_array[random_cell] = 1
+  return map_array
 
 def vertex_index_to_ij(vertex_index):
   '''
@@ -114,7 +113,7 @@ def run_dijkstra(source_vertex):
   Q_cost = []
 
   # Array of ints for storing the next step (vertex_index) on the shortest path back to source_vertex for each vertex in the graph
-  prev = [-1] * NUM_X_CELLS*NUM_Y_CELLS
+  prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
 
   # Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
 
@@ -164,16 +163,19 @@ def render_map(map_array):
   colCount = 0
   for point in reversed(map_array):
       if (colCount<g_NUM_X_CELLS):
-          print(point)
+          print(point, end=" ")
           colCount = colCount+1
+      else:
+          colCount=0
+          print()
 
 
 
 def main():
   global g_WORLD_MAP
 
-  create_test_map(g_WORLD_MAP)
-
+  #create_test_map(g_WORLD_MAP)
+  render_map(g_WORLD_MAP)
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
 
 
