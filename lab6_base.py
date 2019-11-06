@@ -2,9 +2,11 @@
  IMPORTANT: Read through the code before beginning implementation!
  Your solution should fill in the various "TODO" items within this starter code.
 '''
-import copy
+from __future__ import print_function
 import math
 import random
+import copy
+import heapq
 
 g_CYCLE_TIME = .100
 
@@ -14,11 +16,11 @@ g_MAP_SIZE_X = 2. # 2m wide
 g_MAP_SIZE_Y = 1.5 # 1.5m tall
 g_MAP_RESOLUTION_X = 0.5 # Each col represents 50cm
 g_MAP_RESOLUTION_Y = 0.375 # Each row represents 37.5cm
-g_NUM_X_CELLS = int(g_MAP_SIZE_X // g_MAP_RESOLUTION_X) # Number of columns in the grid map
+g_NUM_X_CELLS = int(g_MAP_SIZE_X // g_MAP_RESOLUTION_X) # Number of columns in the grid map 
 g_NUM_Y_CELLS = int(g_MAP_SIZE_Y // g_MAP_RESOLUTION_Y) # Number of rows in the grid map
 
 # Map from Lab 4: values of 0 indicate free space, 1 indicates occupied space
-g_WORLD_MAP = [0] * g_NUM_Y_CELLS * g_NUM_X_CELLS # Initialize graph (grid) as array
+g_WORLD_MAP = [0] * g_NUM_Y_CELLS*g_NUM_X_CELLS # Initialize graph (grid) as array
 
 # Source and Destination (I,J) grid coordinates
 g_dest_coordinates = (3,3)
@@ -28,25 +30,26 @@ g_src_coordinates = (0,0)
 def create_test_map(map_array):
   # Takes an array representing a map of the world, copies it, and adds simulated obstacles
   num_cells = len(map_array)
-  new_map = copy.copy(map_array)
+  new_map = copy.copy(map_array) 
   # Add obstacles to up to sqrt(n) vertices of the map
   for i in range(int(math.sqrt(len(map_array)))):
     random_cell = random.randint(0, num_cells-1)
-    map_array[random_cell] = 1
-  return map_array
+    new_map[random_cell] = 1
+  
+  return new_map
 
 def vertex_index_to_ij(vertex_index):
   '''
   vertex_index: unique ID of graph vertex to be convered into grid coordinates
-  Returns COL, ROW coordinates in 2D grid
+  Returns COL, ROW (x,y) coordinates in 2D grid
   '''
   global g_NUM_X_CELLS
   return vertex_index % g_NUM_X_CELLS, vertex_index // g_NUM_X_CELLS
 
 def ij_to_vertex_index(i,j):
   '''
-  i: Column of grid map
-  j: Row of grid map
+  i: Column of grid map (x)
+  j: Row of grid map (y)
 
   returns integer 'vertex index'
   '''
@@ -69,7 +72,7 @@ def xy_coordinates_to_ij_coordinates(x,y):
   i: Column of grid map
   j: Row of grid map
 
-  returns (X, Y) coordinates in meters at the center of grid cell (i,j)
+  returns (i,j) grid cells corresponding to (x,y) coordinates in meters
   '''
   global g_MAP_RESOLUTION_X, g_MAP_RESOLUTION_Y
   return int(i // g_MAP_RESOLUTION_X), int(j // g_MAP_RESOLUTION_Y)
@@ -79,67 +82,101 @@ def xy_coordinates_to_ij_coordinates(x,y):
 # **********************************
 
 def get_travel_cost(vertex_source, vertex_dest):
+	global g_WORLD_MAP
   # Returns the cost of moving from vertex_source (int) to vertex_dest (int)
   # INSTRUCTIONS:
-  '''
+  	'''
       This function should return 1 if:
-        vertex_source and vertex_dest are neighbors in a 4-connected grid (i.e., N,E,S,W of each other but not diagonal) and neither is occupied in g_WORLD_MAP (i.e., g_WORLD_MAP isn't 1 for either)
+        vertex_source and vertex_dest are neighbors in a 4-connected grid (i.e., N,E,S,W of each other but not diagonal) 
+        and neither is occupied in g_WORLD_MAP (i.e., g_WORLD_MAP isn't 1 for either)
 
       This function should return 1000 if:
         vertex_source corresponds to (i,j) coordinates outside the map
         vertex_dest corresponds to (i,j) coordinates outside the map
         vertex_source and vertex_dest are not adjacent to each other (i.e., more than 1 move away from each other)
-  '''
+  	'''
+  	x_source, y_source = vertex_index_to_ij(vertex_source)
+  	x_dest, y_dest = vertex_index_to_ij(vertex_dest)
 
-  return 100
+  	# Check if vertices are witin map boundaries and unoccupied
+  	if (x_source < 0 or y_source < 0 or x_dest < 0 or y_dest < 0):
+  		return 1000
+  	elif (x_source > (g_NUM_X_CELLS-1) or y_source > (g_NUM_Y_CELLS-1) or x_dest > (g_NUM_X_CELLS-1) or y_dest > (g_NUM_Y_CELLS-1)):
+  		return 1000
+  	elif (g_WORLD_MAP[x_source][y_source] == 1 or g_WORLD_MAP[x_dest][y_dest] == 1):
+  		return 1000
 
+  	x_difference = abs(x_dest - x_source)
+  	y_difference = abs(y_dest - y_source)
+
+  	# Check if vertices are adjacent (already checked if within map and unoccupied)
+  	if (x_difference == 1 and y_difference == 0):
+  		cost_result = 1
+  	elif (x_difference == 0 and y_difference == 1):
+  		cost_result = 1
+  	else:
+  		cost_result = 1000
+	
+	return cost_result
+
+
+def cost_fuckin_everything():
+	global g_WORLD_MAP
+
+	for i in g_WORLD_MAP:
+		if (get_travel_cost(g_WORLD_MAP[i]) == 1):
+			#add node to list
+
+	return # node list
 
 def run_dijkstra(source_vertex):
-  '''
+ 	'''
   source_vertex: vertex index to find all paths back to
   returns: 'prev' array from a completed Dijkstra's algorithm run
 
   Function to return an array of ints corresponding to the 'prev' variable in Dijkstra's algorithm
   The 'prev' array stores the next vertex on the best path back to source_vertex.
   Thus, the returned array prev can be treated as a lookup table:  prev[vertex_index] = next vertex index on the path back to source_vertex
-  '''
-  global g_NUM_X_CELLS, g_NUM_Y_CELLS
+ 	'''  
+	global g_NUM_X_CELLS, g_NUM_Y_CELLS, g_WORLD_MAP
+	s = source_vertex
+	g = g_WORLD_MAP
 
-  # Array mapping vertex_index to distance of shortest path from vertex_index to source_vertex.
-  dist = [0] * g_NUM_X_CELLS * g_NUM_Y_CELLS
+	# Array mapping vertex_index to distance of shortest path from vertex_index to source_vertex.
+	dist = [0] * g_NUM_X_CELLS * g_NUM_Y_CELLS
 
-  # Queue for identifying which vertices are up to still be explored:
-  # Will contain tuples of (vertex_index, cost), sorted such that the min cost is first to be extracted (explore cheapest/most promising vertices first)
-  Q_cost = []
+	# Queue for identifying which vertices are up to still be explored:
+	# Will contain tuples of (vertex_index, cost), sorted such that the min cost is first to be extracted (explore cheapest/most promising vertices first)
+	Q_cost = []
 
-  # Array of ints for storing the next step (vertex_index) on the shortest path back to source_vertex for each vertex in the graph
-  prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
+	# Array of ints for storing the next step (vertex_index) on the shortest path back to source_vertex for each vertex in the graph
+	prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
 
-  # Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
-  heapq.heappush(Q_cost,(0,s))
-  seen=set()
+	# Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
+	heapq.heappush(Q_cost,(s,0))
+	seen=set()
 
-  prev={s:None}
+	prev={s:None}
 
-  while(len(Q_cost)>0):
-      pair=heapq.heappop(Q_cost)
-      dist=pair[0]
-      vertex=pair[1]
-      seen.add(vertex)
+	while(len(Q_cost)>0):
+		pair=heapq.heappop(Q_cost)
+		vertex=pair[0]
+		dist=pair[1]
+		seen.add(vertex)
 
-      node=g[vertex].keys()
+		##node=g[vertex].keys()##
+		## get available neighboring nodes ##
 
-      for w in node:
-          if w not in seen:
-              if dist+g[vertex][w] < dist[w]:
-                  heapq.heappush(Q_cost,(dist+graph[vertex][w],w))
+	for w in (cost_fuckin_everything()):
+		if w not in seen:
+			if dist+g[vertex][w] < dist[w]:
+				heapq.heappush(Q_cost,(dist+graph[vertex][w],w))
 
-                  prev[w]=vertex
+				prev[w]=vertex
 
-                  dist[w]=dist+graph[vertex][w]
-  # Return results of algorithm run
-  return prev
-
+				dist[w]=dist+graph[vertex][w]
+	# Return results of algorithm run
+	return prev
 
 
 def reconstruct_path(prev, source_vertex, dest_vertex):
@@ -159,64 +196,71 @@ def reconstruct_path(prev, source_vertex, dest_vertex):
 
 
 def render_map(map_array):
-  '''
+  	'''
   TODO-
     Display the map in the following format:
     Use " . " for free grid cells
     Use "[ ]" for occupied grid cells
 
-    Example:
+    Example: 
     For g_WORLD_MAP = [0, 0, 1, 0,
-                       0, 1, 1, 0,
-                       0, 0, 0, 0,
+                       0, 1, 1, 0, 
+                       0, 0, 0, 0, 
                        0, 0, 0, 0]
     There are obstacles at (I,J) coordinates: [ (2,0), (1,1), (2,1) ]
     The map should render as:
-      .  .  .  .
-      .  .  .  .
+      .  .  .  . 
+      .  .  .  . 
       . [ ][ ] .
-      .  . [ ] .
+      .  . [ ] . 
 
 
     Make sure to display your map so that I,J coordinate (0,0) is in the bottom left.
     (To do this, you'll probably want to iterate from row 'J-1' to '0')
-  '''
-  colCount = 0
-  colWidth = 5
+  	'''
+	colCount = 0
+	colWidth = 4
 
-  for point in reversed(map_array):
-      if (colCount==g_NUM_X_CELLS):
-          colCount=1
-          print()
-      else:
-          colCount = colCount+1
+	for point in map_array:
+		if (colCount==g_NUM_X_CELLS):
+			colCount=1
+			print()
+		else:
+			colCount = colCount+1
 
-      if point==0:
-          print(".".center(colWidth), end="")
-      else:
-          print("[]".center(colWidth), end="")
-  print()
-
+		if point==0:
+			print(".".center(colWidth), end="")
+		else:
+			print("[]".center(colWidth), end="")
+	print()
 
 
 def main():
-  global g_WORLD_MAP
+	global g_WORLD_MAP
 
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
-  g_WORLD_MAP=create_test_map(g_WORLD_MAP)
+	g_WORLD_MAP = create_test_map(g_WORLD_MAP)
 
   # Use render_map to render your initialized obstacle map
-  render_map(g_WORLD_MAP)
+	render_map(g_WORLD_MAP)
+	print()
+	print()
+	print(g_WORLD_MAP)
 
   # TODO: Find a path from the (I,J) coordinate pair in g_src_coordinates to the one in g_dest_coordinates using run_dijkstra and reconstruct_path
+	dist_array = run_dijkstra(ij_to_vertex_index(g_src_coordinates[0],g_src_coordinates[1]))
 
-  '''
+
+
+
+
+  	'''
   TODO-
     Display the final path in the following format:
     Source: (0,0)
     Goal: (3,1)
     0 -> 1 -> 2 -> 6 -> 7
-  '''
+  	'''
 
 
 if __name__ == "__main__":
