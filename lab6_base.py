@@ -31,7 +31,7 @@ def create_test_map(map_array):
   new_map = copy.copy(map_array)
   # Add obstacles to up to sqrt(n) vertices of the map
   for i in range(int(math.sqrt(len(map_array)))):
-    random_cell = random.randint(0, num_cells)
+    random_cell = random.randint(0, num_cells-1)
     map_array[random_cell] = 1
   return map_array
 
@@ -175,9 +175,10 @@ def main():
   global g_WORLD_MAP
 
   #create_test_map(g_WORLD_MAP)
-  render_map(g_WORLD_MAP)
+  #ender_map(g_WORLD_MAP)
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
-
+  g_WORLD_MAP=create_test_map(g_WORLD_MAP)
+  render_map(g_WORLD_MAP)
 
   # Use render_map to render your initialized obstacle map
 
