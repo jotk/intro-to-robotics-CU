@@ -161,13 +161,20 @@ def render_map(map_array):
     (To do this, you'll probably want to iterate from row 'J-1' to '0')
   '''
   colCount = 0
+  colWidth = 5
+
   for point in reversed(map_array):
-      if (colCount<g_NUM_X_CELLS):
-          print(point, end=" ")
-          colCount = colCount+1
-      else:
-          colCount=0
+      if (colCount==g_NUM_X_CELLS):
+          colCount=1
           print()
+      else:
+          colCount = colCount+1
+
+      if point==0:
+          print(".".center(colWidth), end="")
+      else:
+          print("[]".center(colWidth), end="")
+  print()
 
 
 
