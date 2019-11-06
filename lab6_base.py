@@ -116,9 +116,30 @@ def run_dijkstra(source_vertex):
   prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
 
   # Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
+  heapq.heappush(Q_cost,(0,s))
+  seen=set()
 
+  prev={s:None}
+
+  while(len(Q_cost)>0):
+      pair=heapq.heappop(Q_cost)
+      dist=pair[0]
+      vertex=pair[1]
+      seen.add(vertex)
+
+      node=g[vertex].keys()
+
+      for w in node:
+          if w not in seen:
+              if dist+g[vertex][w] < dist[w]:
+                  heapq.heappush(Q_cost,(dist+graph[vertex][w],w))
+
+                  prev[w]=vertex
+
+                  dist[w]=dist+graph[vertex][w]
   # Return results of algorithm run
   return prev
+
 
 
 def reconstruct_path(prev, source_vertex, dest_vertex):
@@ -181,13 +202,11 @@ def render_map(map_array):
 def main():
   global g_WORLD_MAP
 
-  #create_test_map(g_WORLD_MAP)
-  #ender_map(g_WORLD_MAP)
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
   g_WORLD_MAP=create_test_map(g_WORLD_MAP)
-  render_map(g_WORLD_MAP)
 
   # Use render_map to render your initialized obstacle map
+  render_map(g_WORLD_MAP)
 
   # TODO: Find a path from the (I,J) coordinate pair in g_src_coordinates to the one in g_dest_coordinates using run_dijkstra and reconstruct_path
 
