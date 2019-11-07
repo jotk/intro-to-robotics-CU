@@ -3,6 +3,7 @@
  Your solution should fill in the various "TODO" items within this starter code.
 '''
 from __future__ import print_function
+from collections import deque
 import math
 import random
 import copy
@@ -103,7 +104,7 @@ def get_travel_cost(vertex_source, vertex_dest):
   		return 1000
   	elif (x_source > (g_NUM_X_CELLS-1) or y_source > (g_NUM_Y_CELLS-1) or x_dest > (g_NUM_X_CELLS-1) or y_dest > (g_NUM_Y_CELLS-1)):
   		return 1000
-  	elif (g_WORLD_MAP[x_source][y_source] == 1 or g_WORLD_MAP[x_dest][y_dest] == 1):
+  	elif (g_WORLD_MAP[vertex_source] == 1 or g_WORLD_MAP[vertex_dest] == 1):
   		return 1000
 
   	x_difference = abs(x_dest - x_source)
@@ -119,16 +120,6 @@ def get_travel_cost(vertex_source, vertex_dest):
 	
 	return cost_result
 
-
-def cost_fuckin_everything():
-	global g_WORLD_MAP
-
-	for i in g_WORLD_MAP:
-		if (get_travel_cost(g_WORLD_MAP[i]) == 1):
-			#add node to list
-
-	return # node list
-
 def run_dijkstra(source_vertex):
  	'''
   source_vertex: vertex index to find all paths back to
@@ -139,11 +130,9 @@ def run_dijkstra(source_vertex):
   Thus, the returned array prev can be treated as a lookup table:  prev[vertex_index] = next vertex index on the path back to source_vertex
  	'''  
 	global g_NUM_X_CELLS, g_NUM_Y_CELLS, g_WORLD_MAP
-	s = source_vertex
-	g = g_WORLD_MAP
 
 	# Array mapping vertex_index to distance of shortest path from vertex_index to source_vertex.
-	dist = [0] * g_NUM_X_CELLS * g_NUM_Y_CELLS
+	dist = [1000] * g_NUM_X_CELLS * g_NUM_Y_CELLS
 
 	# Queue for identifying which vertices are up to still be explored:
 	# Will contain tuples of (vertex_index, cost), sorted such that the min cost is first to be extracted (explore cheapest/most promising vertices first)
@@ -152,47 +141,53 @@ def run_dijkstra(source_vertex):
 	# Array of ints for storing the next step (vertex_index) on the shortest path back to source_vertex for each vertex in the graph
 	prev = [-1] * g_NUM_X_CELLS*g_NUM_Y_CELLS
 
-	# Insert your Dijkstra's code here. Don't forget to initialize Q_cost properly!
-	heapq.heappush(Q_cost,(s,0))
-	seen=set()
+	for i, val in enumerate(g_WORLD_MAP):
+		Q_cost.append([i,1000])
+	dist[source_vertex] = 0
+	Q_cost[source_vertex][1] = 0
+	prev[source_vertex] = 0
 
-	prev={s:None}
+	while len(Q_cost) != 0:
+		Q_cost.sort(key=lambda x: x[1])
 
-	while(len(Q_cost)>0):
-		pair=heapq.heappop(Q_cost)
-		vertex=pair[0]
-		dist=pair[1]
-		seen.add(vertex)
+		min_dist_vertex = Q_cost[0][0]
+		Q_cost.pop(0)
 
-		##node=g[vertex].keys()##
-		## get available neighboring nodes ##
+		for i, val in enumerate(g_WORLD_MAP):
+			if (get_travel_cost(min_dist_vertex,i) == 1): #Find every neighbor of 'min_dist_vertex'
+				alt = dist[min_dist_vertex] + 1
+				if (alt < dist[i]):
+					for a, info in enumerate(Q_cost):
+						if (info[0] == i):
+							Q_cost[a][1] = alt
+					dist[i] = alt
+					prev[i] = alt
 
-	for w in (cost_fuckin_everything()):
-		if w not in seen:
-			if dist+g[vertex][w] < dist[w]:
-				heapq.heappush(Q_cost,(dist+graph[vertex][w],w))
-
-				prev[w]=vertex
-
-				dist[w]=dist+graph[vertex][w]
-	# Return results of algorithm run
-	return prev
+	return dist, prev
 
 
 def reconstruct_path(prev, source_vertex, dest_vertex):
-  '''
+	'''
   Given a populated 'prev' array, a source vertex_index, and destination vertex_index,
   allocate and return an integer array populated with the path from source to destination.
   The first entry of your path should be source_vertex and the last entry should be the dest_vertex.
   If there is no path between source_vertex and dest_vertex, as indicated by hitting a '-1' on the
   path from dest to source, return an empty list.
-  '''
-  final_path = []
+	'''
+	final_path = deque()
 
-  # TODO: Insert your code here
+	# TODO: Insert your code here
+	if (dest_vertex == source_vertex and prev[dest_vertex] != -1):
+		return [dest_vertex]
+	elif (prev[dest_vertex] != -1):
+		while(prev[dest_vertex] != -1):
+			final_path.append(dest_vertex)
+			dest_vertex = prev[dest_vertex]
+	else:
+		return list()
 
 
-  return final_path
+	return final_path
 
 
 def render_map(map_array):
@@ -218,22 +213,38 @@ def render_map(map_array):
     Make sure to display your map so that I,J coordinate (0,0) is in the bottom left.
     (To do this, you'll probably want to iterate from row 'J-1' to '0')
   	'''
-	colCount = 0
+  	global g_NUM_X_CELLS, g_NUM_Y_CELLS
+
 	colWidth = 4
+	max_column = g_NUM_X_CELLS-1
+	max_row = g_NUM_Y_CELLS-1
 
-	for point in map_array:
-		if (colCount==g_NUM_X_CELLS):
-			colCount=1
-			print()
-		else:
-			colCount = colCount+1
-
-		if point==0:
-			print(".".center(colWidth), end="")
-		else:
-			print("[]".center(colWidth), end="")
+	print()
+	for j in range(max_row,-1,-1):
+		for i in range(0,max_column+1):
+			current_index = ij_to_vertex_index(i,j)
+			if (map_array[current_index] == 0):
+				print(".".center(colWidth), end="")
+			else:
+				print("[]".center(colWidth), end="")
+		print()
+	print()
 	print()
 
+def print_array_as_is(array):
+	global g_NUM_X_CELLS, g_NUM_Y_CELLS
+
+	colWidth = 7
+	max_column = g_NUM_X_CELLS-1
+	max_row = g_NUM_Y_CELLS-1
+
+	for j in range(max_row,-1,-1):
+		for i in range(0,max_column+1):
+			current_index = ij_to_vertex_index(i,j)
+			print(str(array[current_index]).center(colWidth), end="")
+		print()
+	print()
+	print()
 
 def main():
 	global g_WORLD_MAP
@@ -241,18 +252,21 @@ def main():
   # TODO: Initialize a grid map to use for your test -- you may use create_test_map for this, or manually set one up with obstacles
 	g_WORLD_MAP = create_test_map(g_WORLD_MAP)
 
+  # Print array of world map for user to view
+  	print(g_WORLD_MAP)
+
   # Use render_map to render your initialized obstacle map
 	render_map(g_WORLD_MAP)
-	print()
-	print()
-	print(g_WORLD_MAP)
 
   # TODO: Find a path from the (I,J) coordinate pair in g_src_coordinates to the one in g_dest_coordinates using run_dijkstra and reconstruct_path
-	dist_array = run_dijkstra(ij_to_vertex_index(g_src_coordinates[0],g_src_coordinates[1]))
+  	src_int = ij_to_vertex_index(g_src_coordinates[0],g_src_coordinates[1])
+  	dest_int = ij_to_vertex_index(g_dest_coordinates[0],g_dest_coordinates[1])
 
-
-
-
+	dist, prev = run_dijkstra(src_int)
+	print("Dist:")
+	print_array_as_is(dist)
+	print("Prev: ")
+	print_array_as_is(prev)
 
   	'''
   TODO-
@@ -261,6 +275,8 @@ def main():
     Goal: (3,1)
     0 -> 1 -> 2 -> 6 -> 7
   	'''
+	shortest_path_array = reconstruct_path(prev,src_int,dest_int)
+	print(shortest_path_array)
 
 
 if __name__ == "__main__":
