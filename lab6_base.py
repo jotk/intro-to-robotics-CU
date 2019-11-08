@@ -3,11 +3,9 @@
  Your solution should fill in the various "TODO" items within this starter code.
 '''
 from __future__ import print_function
-from collections import deque
 import math
 import random
 import copy
-import heapq
 
 g_CYCLE_TIME = .100
 
@@ -145,7 +143,7 @@ def run_dijkstra(source_vertex):
 		Q_cost.append([i,1000])
 	dist[source_vertex] = 0
 	Q_cost[source_vertex][1] = 0
-	prev[source_vertex] = 0
+	prev[source_vertex] = source_vertex
 
 	while len(Q_cost) != 0:
 		Q_cost.sort(key=lambda x: x[1])
@@ -161,7 +159,7 @@ def run_dijkstra(source_vertex):
 						if (info[0] == i):
 							Q_cost[a][1] = alt
 					dist[i] = alt
-					prev[i] = alt
+					prev[i] = min_dist_vertex
 
 	return dist, prev
 
@@ -174,7 +172,7 @@ def reconstruct_path(prev, source_vertex, dest_vertex):
   If there is no path between source_vertex and dest_vertex, as indicated by hitting a '-1' on the
   path from dest to source, return an empty list.
 	'''
-	final_path = deque()
+	final_path = []
 
 	# TODO: Insert your code here
 	if (dest_vertex == source_vertex and prev[dest_vertex] != -1):
@@ -183,11 +181,16 @@ def reconstruct_path(prev, source_vertex, dest_vertex):
 		while(prev[dest_vertex] != -1):
 			final_path.append(dest_vertex)
 			dest_vertex = prev[dest_vertex]
+			if (dest_vertex == source_vertex):
+				final_path.append(dest_vertex)
+				break
+			elif (prev[dest_vertex] == -1):
+				return list()
 	else:
 		return list()
 
-
-	return final_path
+	# Return a reversed path list (so element 0 is the source)
+	return final_path[::-1]
 
 
 def render_map(map_array):
@@ -276,7 +279,13 @@ def main():
     0 -> 1 -> 2 -> 6 -> 7
   	'''
 	shortest_path_array = reconstruct_path(prev,src_int,dest_int)
-	print(shortest_path_array)
+	#print(shortest_path_array)
+
+	for i in range(0,len(shortest_path_array)):
+		if (i == len(shortest_path_array)-1):
+			print(str(shortest_path_array[i]))
+		else:
+			print(str(shortest_path_array[i]) + " -> ", end="")
 
 
 if __name__ == "__main__":
