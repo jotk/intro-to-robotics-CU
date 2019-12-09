@@ -1,0 +1,13 @@
+cd ~/ros_ws
+./intera.sh
+
+('exit' to get out of current connection)
+
+
+FOR SIMULATOR
+cd ~/ros_ws
+./intera.sh sim
+
+
+CURRENT ROBOT POSITION TOPIC
+rostopic echo /robot/limb/right/endpoint_state
