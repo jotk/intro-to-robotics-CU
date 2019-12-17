@@ -2,14 +2,12 @@ import intera_interface
 import rospy
 import copy 
 import std_msgs
-import camera_image
+import camera_image_nonclass
 import argparse
 import numpy as np
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Pose, Point, Quaternion
-
-
 
 
 class robot():
@@ -21,7 +19,7 @@ class robot():
         self._sub_open = None
         self._sub_close = None
         self._is_pneumatic = False
-        self._limb.set_joint_position_speed(joint_speed)
+
         self.hover_dist = hover_dist
         self.table_level = table_level
         self.lego_height = lego_height
@@ -31,6 +29,8 @@ class robot():
 
         rospy.init_node('Ivan_Jot_Albert_Angus')
         self._limb = intera_interface.Limb('right')
+        self._gripper = intera_interface.Gripper()
+        self._limb.set_joint_position_speed(joint_speed)
         self._cam = None
         self.lego_locations = None
 
@@ -49,15 +49,20 @@ class robot():
 
         print("Waking up...")
         self._limb.move_to_neutral()
+        rospy.sleep(2)
+        print("Moved to nuetral.")
 
 
 
     def take_image(self):
         #move to pictuyre pos
         print("About to take a picture...")
-        self._limb.move_to_joint_positions(self._arm_camera_joint_angles, timeout=2)
-        self._cam = camera_image.ArmCamera()
-        self.lego_locations = self._cam.lego_coords
+        self._limb.move_to_joint_positions(self._arm_camera_joint_angles)
+        rospy.sleep(2)
+        camera_image_nonclass.main()
+        rospy.sleep(2)
+
+        self.lego_locations = camera_image_nonclass.get_coords_of_legos()
         print("Picture taken and analyzed!")
         # camera_image.main()
         # g_image = camera_image.cv_image
@@ -66,8 +71,6 @@ class robot():
         # head_display = intera_interface.HeadDisplay()
         # head_display.display_image("/home/abcd3302/ros_ws/a.png")
         # '''
-
-
     def go_to_nuetral(self):
         self._limb.move_to_neutral()
     def open_grip(self, msg):
@@ -94,7 +97,7 @@ class robot():
 
     def move_arm(self, pos):
         print(pos.position.x,pos.position.y,pos.position.z)
-        target_joint_angles = g_limb.ik_request(pos, "right_hand")
+        target_joint_angles = self._limb.ik_request(pos, "right_hand")
         if target_joint_angles is False:
             rospy.logerr("Couldn't solve for position %s" % str(pos))
             return
@@ -141,6 +144,7 @@ def main():
 
     # Initialize sawyer arm
     sawyerArm = robot()
+    sawyerArm.take_image()
 
     #rospy.loginfo("Old Hand Pose:\n %s" % str(g_limb._tip_states.states[0].pose))
     #rospy.loginfo("Old Joint Angles:\n %s" % str(g_limb.joint_angles()))

@@ -23,6 +23,7 @@ g_sub_open = None
 g_sub_close = None
 g_is_pneumatic = False
 
+
 hover_dist = 0.213
 table_level = -0.06
 lego_height = 0.018
