@@ -58,6 +58,15 @@ class robot():
 
     def init_tester_base(self):
         self.base = [[ 0.626546765216, -0.167908411913], [0.604467187097, -0.147199806627]]
+
+        x_diff = self.base[0][0] - self.base[1][0] # x decreases
+        y_diff = self.base[1][1] - self.base[0][1] # y increases
+
+        pt3 = [self.base[1][0] - x_diff, self.base[1][1] + y_diff]
+        pt4 = [pt3[0] - x_diff, pt3[1] + y_diff]
+
+        self.base.extend([pt3, pt4])
+
         # change_vector = [self.base[0][0] - self.base[1][0], self.base[0][1] - self.base[0][1]]
         # self.base.append([.607127122,-0.09970412294])
         # self.base.append([0.6001588995,-0.05699326512])
@@ -154,6 +163,17 @@ class robot():
         Used so we can hardcode a configuration for the lego peices for testing and such
         """
         self.lego_locations = [[0.798089317137,0.381599983921], [0.795273296797, 0.349632885306]]
+
+        x_diff = self.lego_locations[0][0] - self.lego_locations[1][0] # x decreases
+        y_diff = self.lego_locations[0][1] - self.lego_locations[1][1] # y decreases
+
+        pt3 = [self.lego_locations[1][0] - x_diff, self.lego_locations[1][1] - y_diff]
+        pt4 = [pt3[0] - x_diff, pt3[1] - y_diff]
+        pt5 = [pt4[0] - x_diff, pt4[1] - y_diff]
+        pt6 = [pt5[0] - x_diff, pt5[1] - y_diff]
+
+        self.lego_locations.extend([pt3, pt4,pt5,pt6])
+
         # find vector difference
 
     def stack(self, coord):
