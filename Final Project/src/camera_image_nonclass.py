@@ -93,52 +93,29 @@ def main(isMain=False):
     cameras.start_streaming(args.camera)
     rectify_image = not args.raw
     use_canny_edge = args.edge
-
-
-    print(cameras)
-    print()
-    print()
     bridge = CvBridge()
-    try:
-        print("yolo yolo")
-        cv_image = bridge.imgmsg_to_cv2(img_data, "bgr8")
-    except CvBridgeError, err:
-        rospy.logerr(err)
-        return
-    cv_win_name = 'name'
-    cv2.namedWindow(cv_win_name, 0)
-    # refresh the image on the screen
-    cv2.imshow(cv_win_name, cv_image)
-    cv2.waitkey(-1)
-    cv2.destroyAllWindows()
-    cv2.imwrite("hand_image.jpg", cv_image)
-    rospy.sleep(99999)
-    cv2.waitKey(99999999)
+    # try:
+    #     cv_image = bridge.imgmsg_to_cv2(img_data, "bgr8")
+    # except CvBridgeError as err:
+    #     rospy.logerr(err)
+    #     return
+    # cv_win_name = 'name'
+    # cv2.namedWindow(cv_win_name, 0)
+    # # refresh the image on the screen
+    # cv2.imshow(cv_win_name, cv_image)
+    # cv2.waitkey(-1)
+    # cv2.destroyAllWindows()
+    # cv2.imwrite("hand_image.jpg", cv_image)
+    # rospy.sleep(99999)
+    # cv2.waitKey(99999999)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #cameras.set_callback(args.camera, show_image_callback, rectify_image=rectify_image, callback_args=(use_canny_edge, args.camera))
-    #show_image_callback(args.camera, (use_canny_edge,"win_name"))
+    cameras.set_callback(args.camera, show_image_callback, rectify_image=rectify_image, callback_args=(use_canny_edge, args.camera))
+    # show_image_callback(args.camera, (use_canny_edge,"win_name"))
 
     print("ARGS rectify TYPE", type(rectify_image))
     # show_image_callback(rectify_image=rectify_image, callback_args=(use_canny_edge, args.camera))
+
 
     # optionally set gain and exposure parameters
     if args.gain is not None:

@@ -2,7 +2,7 @@ import intera_interface
 import rospy
 import copy 
 import std_msgs
-import camera_image_nonclass
+import camera_image_original
 import argparse
 import numpy as np
 import cv2
@@ -19,6 +19,10 @@ class robot():
         self._sub_open = None
         self._sub_close = None
         self._is_pneumatic = False
+
+        self.next_lego_target = None
+        self.legos_stacked_num = 0
+        self.base = None
 
         self.hover_dist = hover_dist
         self.table_level = table_level
@@ -52,6 +56,12 @@ class robot():
         rospy.sleep(2)
         print("Moved to nuetral.")
 
+    def init_tester_base(self):
+        self.base = [[ 0.626546765216, -0.167908411913], [0.604467187097, -0.147199806627]]
+        # change_vector = [self.base[0][0] - self.base[1][0], self.base[0][1] - self.base[0][1]]
+        # self.base.append([.607127122,-0.09970412294])
+        # self.base.append([0.6001588995,-0.05699326512])
+        self.next_lego_target = self.base[0]
 
 
     def take_image(self):
@@ -59,10 +69,10 @@ class robot():
         print("About to take a picture...")
         self._limb.move_to_joint_positions(self._arm_camera_joint_angles)
         rospy.sleep(2)
-        camera_image_nonclass.main()
+        camera_image_original.main()
         rospy.sleep(2)
 
-        self.lego_locations = camera_image_nonclass.get_coords_of_legos()
+        self.lego_locations = camera_image_original.get_coords_of_legos()
         print("Picture taken and analyzed!")
         # camera_image.main()
         # g_image = camera_image.cv_image
@@ -96,7 +106,7 @@ class robot():
         rospy.sleep(0.5)
 
     def move_arm(self, pos):
-        print(pos.position.x,pos.position.y,pos.position.z)
+        # print(pos.position.x,pos.position.y,pos.position.z)
         target_joint_angles = self._limb.ik_request(pos, "right_hand")
         if target_joint_angles is False:
             rospy.logerr("Couldn't solve for position %s" % str(pos))
@@ -109,13 +119,13 @@ class robot():
 
         target_pose = Pose()
         target_pose.orientation = copy.deepcopy(self._orientation_hand_down)
-
+        print(x, y)
         target_pose.position.x = x # Add 20cm to the x axis position of the hand
         target_pose.position.y = y
         target_pose.position.z = self.hover_dist
         self.move_arm(target_pose)
 
-        target_pose.position.z = self.table_level
+        target_pose.position.z = self.table_level + .02
         self.move_arm(target_pose)
 
         self.gripper_close()
@@ -139,13 +149,39 @@ class robot():
         self.stack_height += self.lego_height
         self.gripper_open()
 
-def main():
-    global g_limb, g_position_neutral, g_orientation_hand_down
+    def init_tester_coords(self):
+        """
+        Used so we can hardcode a configuration for the lego peices for testing and such
+        """
+        self.lego_locations = [[0.798089317137,0.381599983921], [0.795273296797, 0.349632885306]]
+        # find vector difference
 
+    def stack(self, coord):
+        self.get_lego(coord[0], coord[1])
+        self.to_target(self.next_lego_target[0], self.next_lego_target[1])
+        self.change_next_target()
+        self.go_to_nuetral()
+
+    def change_next_target(self):
+        """
+        Will need to change if the target structure changes
+        """
+        if self.legos_stacked_num > 1: # should be 3
+            self.stack_height = self.stack_heigh + lego_base_height # changes the stack height
+            self.next_lego_target = self.base[0]
+        else:
+            self.next_lego_target = self.base[(self.legos_stacked_num+4)%4 + 1] # go to the coord in base which is next to the pose now
+        self.legos_stacked_num = self.legos_stacked_num + 1
+
+
+
+
+def main():
     # Initialize sawyer arm
     sawyerArm = robot()
-    sawyerArm.take_image()
-
+    # sawyerArm.take_image()
+    sawyerArm.init_tester_coords()
+    sawyerArm.init_tester_base()
     #rospy.loginfo("Old Hand Pose:\n %s" % str(g_limb._tip_states.states[0].pose))
     #rospy.loginfo("Old Joint Angles:\n %s" % str(g_limb.joint_angles()))
 
@@ -166,9 +202,11 @@ def main():
     # Send the robot arm to the joint angles in target_joint_angles, wait up to 2 seconds to finish
 
     # get_lego(0.617,0.345)
-    sawyerArm.get_lego(.757661319471,0.393808161972)
-    sawyerArm.to_target(0.607,-0.153)
-    sawyerArm.go_to_nuetral()
+    for lego_coord in sawyerArm.lego_locations:
+        sawyerArm.stack(lego_coord)
+    # sawyerArm.get_lego(0.792659329811,0.388437401831)
+    # sawyerArm.to_target(0.607,-0.153)
+    
 
     #get_lego(0.3,0.2656)
     #to_target(0.2,0.5,0.2056)
