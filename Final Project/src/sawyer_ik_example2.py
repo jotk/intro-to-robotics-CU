@@ -11,7 +11,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 
 
 class robot():
-    def __init__(self, hover_dist = 0.213, table_level = -0.06, lego_height = 0.018, lego_base_height = 0.0, joint_speed=.3):
+    def __init__(self, hover_dist = 0.213, table_level = -0.06, lego_height = 0.018, lego_base_height = 0.0, joint_speed=0.6):
         self._limb = None
         self._orientation_hand_down = None
         self._position_neutral = None
@@ -56,8 +56,21 @@ class robot():
         rospy.sleep(2)
         print("Moved to nuetral.")
 
+    def init_head_dis(self):
+        head_display = intera_interface.HeadDisplay()
+        head_display.display_image("bob.jpg")
+
     def init_tester_base(self):
-        self.base = [[ 0.626546765216, -0.167908411913], [0.604467187097, -0.147199806627]]
+        self.base = [[ 0.585870807132, -0.188450445585], [0.590044967608, -0.153576955471]]
+
+        x_diff = self.base[0][0] - self.base[1][0] # x decreases
+        y_diff = self.base[1][1] - self.base[0][1] # y increases
+
+        pt3 = [self.base[1][0] - x_diff, self.base[1][1] + y_diff]
+        pt4 = [pt3[0] - x_diff, pt3[1] + y_diff]
+
+        self.base.extend([pt3, pt4])
+
         # change_vector = [self.base[0][0] - self.base[1][0], self.base[0][1] - self.base[0][1]]
         # self.base.append([.607127122,-0.09970412294])
         # self.base.append([0.6001588995,-0.05699326512])
@@ -153,7 +166,18 @@ class robot():
         """
         Used so we can hardcode a configuration for the lego peices for testing and such
         """
-        self.lego_locations = [[0.798089317137,0.381599983921], [0.795273296797, 0.349632885306]]
+        self.lego_locations = [[0.777893882566,0.382403704508], [0.772105640852, 0.347056797237]]
+
+        x_diff = self.lego_locations[0][0] - self.lego_locations[1][0] # x decreases
+        y_diff = self.lego_locations[0][1] - self.lego_locations[1][1] # y decreases
+
+        pt3 = [self.lego_locations[1][0] - x_diff, self.lego_locations[1][1] - y_diff]
+        pt4 = [pt3[0] - x_diff, pt3[1] - y_diff]
+        pt5 = [pt4[0] - x_diff, pt4[1] - y_diff]
+        pt6 = [pt5[0] - x_diff, pt5[1] - y_diff]
+
+        self.lego_locations.extend([pt3, pt4,pt5,pt6])
+
         # find vector difference
 
     def stack(self, coord):
@@ -166,8 +190,9 @@ class robot():
         """
         Will need to change if the target structure changes
         """
-        if self.legos_stacked_num > 1: # should be 3
-            self.stack_height = self.stack_heigh + lego_base_height # changes the stack height
+        if self.legos_stacked_num > 2: # should be 3
+            self.lego_base_height -= 0.05
+            self.stack_height = self.stack_height + self.lego_base_height + .05# changes the stack height
             self.next_lego_target = self.base[0]
         else:
             self.next_lego_target = self.base[(self.legos_stacked_num+4)%4 + 1] # go to the coord in base which is next to the pose now
@@ -179,6 +204,7 @@ class robot():
 def main():
     # Initialize sawyer arm
     sawyerArm = robot()
+    sawyerArm.init_head_dis()
     # sawyerArm.take_image()
     sawyerArm.init_tester_coords()
     sawyerArm.init_tester_base()

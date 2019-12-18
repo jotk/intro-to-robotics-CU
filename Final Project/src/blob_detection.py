@@ -179,10 +179,10 @@ def get_blob_centroids(blobs_list):
 def main():
   global img_height, img_width
   # Read in image using the imread function
-  img = cv2.imread('hand_image.jpg')
-  add_color_range_to_detect([0,0,200], [0,0,255]) # Detect red
-  add_color_range_to_detect([0,200,0], [0,255,0]) # Detect green
-  add_color_range_to_detect([200,0,0], [255,0,0]) # Detect blue
+  img = cv2.imread('hand_image2.jpg')
+  add_color_range_to_detect([0,0,0], [0,0,60]) # Detect red
+  add_color_range_to_detect([0,0,0], [0,255,0]) # Detect green
+  add_color_range_to_detect([0,0,0], [255,0,0]) # Detect blue
 
   ########## PART 1 ############
   # Create img_mask of all foreground pixels, where foreground is defined as passing the color filter
