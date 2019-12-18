@@ -71,7 +71,7 @@ def get_blobs(img_mask):
   img_mask_width = img_mask.shape[1]
   mask_dup = copy.copy(img_mask)
   blobs_list = []
-  print(mask_dup) 
+  #print(mask_dup) 
   for y in range (0,img_mask_height):
       for x in range (0,img_mask_width):
           if (mask_dup[y][x]):
@@ -101,8 +101,9 @@ def get_blob_centroids(blobs_list):
 
   object_positions_list = []
   for i in blobs_list:
-      centroid = np.mean(i,axis=0)
-      object_positions_list.append(centroid)
+  	  print()
+  	  centroid = np.mean(i,axis=0)
+  	  object_positions_list.append(centroid)
 
   return object_positions_list
 
@@ -111,6 +112,16 @@ def main():
 	global img_height, img_width
   # Read in image using the imread function
 	img = cv2.imread('./phoneimg.jpg',cv2.IMREAD_GRAYSCALE)
+	img = cv2.blur(img,(15,15))
+
+	detector = cv2.SimpleBlobDetector()
+	keyPoints = detector.detect(img)
+
+	im_with_keypoints = cv2.drawKeyPoints(img,keyPoints, np.array([]), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+
+
+	'''
 	add_color_range_to_detect([0], [53]) # Detect red
 	img_mask = get_mask(img)
 	blobs = get_blobs(img_mask)
@@ -126,10 +137,13 @@ def main():
 	
 
  	centroid_group = get_close_centroid(object_positions_list)
- 	print(centroid_group)
+ 	#print(centroid_group)
+ 	
 	cv2.imshow('orig', img)
 	cv2.imshow('img_mask', img_mask)
 	cv2.imshow('located', img_markup)
+	'''
+	cv2.imshow("keyPoints", im_with_keypoints)
 	cv2.waitKey(-1)  # Wait until a key is pressed to exit the program
 	cv2.destroyAllWindows() # Close all the windows
 
