@@ -177,8 +177,8 @@ def get_blob_centroids(blobs_list):
 def main():
   global img_height, img_width
   # Read in image using the imread function
-  img = cv2.imread("/Users/jotkaur/Desktop/intro-to-robotics-CU/Final Project/stuff/phoneimg.jpg", cv2.IMREAD_GRAYSCALE)
-  thresh = 75
+  img = cv2.imread("/Users/jotkaur/Desktop/intro-to-robotics-CU/Final Project/stuff/hand_image.jpg", cv2.IMREAD_GRAYSCALE)
+  thresh = 40
   img = cv2.blur(img, (15, 15))
   img = cv2.threshold(img, thresh, 600, cv2.THRESH_BINARY)[1]
   # add_color_range_to_detect([0,0,200], [0,0,255]) # Detect red
