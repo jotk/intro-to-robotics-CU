@@ -22,15 +22,12 @@ def add_color_range_to_detect(lower_bound, upper_bound):
   color_ranges.append([lower_bound, upper_bound]) # Add color range to global list of color ranges to detect
 
 def check_if_color_in_range(bgr_tuple):
-  for entry in color_ranges:
-    lower, upper = entry[0], entry[1]
+  if bgr_tuple==255:
+    in_range = False
+    return False
+  else:
     in_range = True
-    for i in range(len(bgr_tuple)):
-      if bgr_tuple[i] < lower[i] or bgr_tuple[i] > upper[i]:
-        in_range = False
-        break
-    if in_range: return True
-  return False
+    return True
 
 def do_color_filtering(img):
   # Color Filtering
@@ -57,7 +54,7 @@ def do_color_filtering(img):
   # TODO: Iterate through each pixel (x,y) coordinate of the image,
   #       checking if its color is in a range we've specified using check_if_color_in_range
   # TIP: You'll need to index into 'mask' using [y,x] instead of [x,y] as you may be
-  #      more familiar with, due to how the matrices are stored
+  #      more familiar with, due to how thematrices are stored
   for y in range(0,img_height):
     for x in range (0,img_width):
         if(check_if_color_in_range(img[y][x])):
@@ -180,10 +177,13 @@ def get_blob_centroids(blobs_list):
 def main():
   global img_height, img_width
   # Read in image using the imread function
-  img = cv2.imread('./phoneimg.jpg')
-  add_color_range_to_detect([0,0,200], [0,0,255]) # Detect red
-  add_color_range_to_detect([0,200,0], [0,255,0]) # Detect green
-  add_color_range_to_detect([200,0,0], [255,0,0]) # Detect blue
+  img = cv2.imread("/Users/jotkaur/Desktop/intro-to-robotics-CU/Final Project/stuff/phoneimg.jpg", cv2.IMREAD_GRAYSCALE)
+  thresh = 75
+  img = cv2.blur(img, (15, 15))
+  img = cv2.threshold(img, thresh, 600, cv2.THRESH_BINARY)[1]
+  # add_color_range_to_detect([0,0,200], [0,0,255]) # Detect red
+  # add_color_range_to_detect([0,200,0], [0,255,0]) # Detect green
+  # add_color_range_to_detect([200,0,0], [255,0,0]) # Detect blue
 
   ########## PART 1 ############
   # Create img_mask of all foreground pixels, where foreground is defined as passing the color filter
@@ -202,7 +202,7 @@ def main():
   img_markup = img.copy()
   for obj_pos in object_positions_list:
     obj_pos_vector = np.array(obj_pos).astype(np.int32) # In case your object positions weren't numpy arrays
-    img_markup = cv2.circle(img_markup,(obj_pos_vector[1], obj_pos_vector[0]),5,(0,0,0),10)
+    img_markup = cv2.circle(img_markup,(obj_pos_vector[1], obj_pos_vector[0]),5,(100,0,100),10)
     print("Object pos: " + str(obj_pos_vector))
 
   # Display the original image, the mask, and the original image with object centers drawn on it
